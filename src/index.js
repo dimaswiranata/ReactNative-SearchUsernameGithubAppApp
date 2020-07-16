@@ -1,123 +1,66 @@
-/*This is an Example of SearchBar in React Native*/
-import * as React from 'react';
-import {
-  Text,
-  View,
-  StyleSheet,
-  FlatList,
-  ActivityIndicator,
-  Platform,
-} from 'react-native';
-import { SearchBar } from 'react-native-elements';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, FlatList, Image } from 'react-native';
+import { ItemList, SearchBar } from "./component";
+import axios from "axios";
 
-export default class App extends React.Component {
-  constructor(props) {
-    super(props);
-    //setting default state
-    this.state = { isLoading: true, search: '' };
-    this.arrayholder = [];
-  }
-  componentDidMount() {
-    return fetch('https://jsonplaceholder.typicode.com/posts')
-      .then(response => response.json())
-      .then(responseJson => {
-        this.setState(
-          {
-            isLoading: false,
-            dataSource: responseJson,
-          },
-          function() {
-            this.arrayholder = responseJson;
-          }
-        );
+const index = () => {
+
+  const [data, setData] = useState([]);
+  const [username, setUsername] = useState('');
+  const [arrayholder, setArrayholder] = useState([]);
+
+  useEffect(() => {
+    getData();
+    return () => {
+      console.log('Clean Up')
+    }
+  }, []);
+
+  const getData = async () => {
+    await axios
+      .get(`https://api.github.com/users`)
+      .then(res => {
+        const data = res.data;
+        console.log(data);
+        setData(data);
+        setArrayholder(data);
       })
-      .catch(error => {
-        console.error(error);
+      .catch(err => {
+        console.log('error', err.message);
       });
   }
 
-  search = text => {
-    console.log(text);
-  };
-  clear = () => {
-    this.search.clear();
-  };
-
-  SearchFilterFunction(text) {
-    //passing the inserted text in textinput
-    const newData = this.arrayholder.filter(function(item) {
+  const searchFilterFunction = (text) => {
+    const newData = arrayholder.filter((item) => {
       //applying filter for the inserted text in search bar
-      const itemData = item.title ? item.title.toUpperCase() : ''.toUpperCase();
+      const itemData = item.login ? item.login.toUpperCase() : ''.toUpperCase();
       const textData = text.toUpperCase();
       return itemData.indexOf(textData) > -1;
     });
 
-    this.setState({
-      //setting the filtered newData on datasource
-      //After setting the data it will automatically re-render the view
-      dataSource: newData,
-      search: text,
-    });
+    setData(newData);
+    setUsername(text);
   }
 
-  ListViewItemSeparator = () => {
-    //Item sparator view
-    return (
-      <View
-        style={{
-          height: 0.3,
-          width: '90%',
-          backgroundColor: '#080808',
-        }}
+  return (
+    <View>
+      <SearchBar
+        onChangeText={e => searchFilterFunction(e)}
       />
-    );
-  };
-
-  render() {
-    if (this.state.isLoading) {
-      //Loading View while data is loading
-      return (
-        <View style={{ flex: 1, paddingTop: 20 }}>
-          <ActivityIndicator />
-        </View>
-      );
-    }
-    return (
-      //ListView to show with textinput used as search bar
-      <View style={styles.viewStyle}>
-        <SearchBar
-          round
-          searchIcon={{ size: 24 }}
-          onChangeText={text => this.SearchFilterFunction(text)}
-          onClear={text => this.SearchFilterFunction('')}
-          placeholder="Type Here..."
-          value={this.state.search}
-        />
-        <FlatList
-          data={this.state.dataSource}
-          ItemSeparatorComponent={this.ListViewItemSeparator}
-          //Item Separator View
-          renderItem={({ item }) => (
-            // Single Comes here which will be repeatative for the FlatListItems
-            <Text style={styles.textStyle}>{item.title}</Text>
-          )}
-          enableEmptySections={true}
-          style={{ marginTop: 10 }}
-          keyExtractor={(item, index) => index.toString()}
-        />
-      </View>
-    );
-  }
+      <FlatList
+        data={data}
+        renderItem={({ item }) => (
+          <ItemList
+            keyExtractor={item.id}
+            image={item.avatar_url}
+            userName={item.login}
+          />
+        )}
+      />
+    </View>
+  )
 }
 
-const styles = StyleSheet.create({
-  viewStyle: {
-    justifyContent: 'center',
-    flex: 1,
-    backgroundColor: 'white',
-    marginTop: Platform.OS == 'ios' ? 30 : 0,
-  },
-  textStyle: {
-    padding: 10,
-  },
-});
+export default index
+
+const styles = StyleSheet.create({})
