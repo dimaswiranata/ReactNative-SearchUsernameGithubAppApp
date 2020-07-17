@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, FlatList, ActivityIndicator, LogBox } from 'react-native';
+import { StyleSheet, Text, View, FlatList, ActivityIndicator, Image } from 'react-native';
 import { ItemList, SearchBar } from "./src/component";
+import { errors, notfound, write } from "./src/assets";
 import axios from "axios";
 
 const App = () => {
-
-  // LogBox.ignoreWarnings(['Failed child context type: Invalid child context `virtualizedCell.cellKey` of type `number` supplied to `CellRenderer`, expected `string`.']);
 
   const [data, setData] = useState([]);
   const [username, setUsername] = useState('');
   const [arrayholder, setArrayholder] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     getData();
@@ -63,34 +62,63 @@ const App = () => {
 
   if (username.length < 1){
     MainScreen = (
-      <View style={styles.text}>
+      <View>
         {
           error ? (
-            <Text>{errorMessage}</Text>
+            <View style={styles.textSection}>
+              <Image style={{width: 150, height: 150}} source={errors}/>
+              <Text style={styles.text}>{errorMessage}</Text>
+            </View>
           ) : (
-            <Text>Start Write Username</Text>
+            <View style={styles.textSection}>
+              <Image style={{width: 150, height: 150}} source={write}/>
+              <Text style={styles.text}>Start Write Username</Text>
+            </View>
           )
         }
       </View>
     );
   } else if (data.length < 1){
     MainScreen = (
-      <View style={styles.text}>
-        <Text>Username Not Found</Text>
+      <View>
+        {
+          error ? (
+            <View style={styles.textSection}>
+              <Image style={{width: 150, height: 150}} source={errors}/>
+              <Text style={styles.text}>{errorMessage}</Text>
+            </View>
+          ) : (
+            <View style={styles.textSection}>
+              <Image style={{width: 150, height: 150}} source={notfound}/>
+              <Text style={styles.text}>Username Not Found</Text>
+            </View>
+          )
+        }
       </View>
     );
   } else {
     MainScreen = (
-      <FlatList
-        data={data}
-        renderItem={({ item, i }) => (
-          <ItemList
-            image={item.avatar_url}
-            userName={item.login}
+      <>
+      {
+        !error ? (
+          <FlatList
+            data={data}
+            renderItem={({ item, i }) => (
+              <ItemList
+                image={item.avatar_url}
+                userName={item.login}
+              />
+            )}
+            keyExtractor={(item,index) => index.toString()}
           />
-        )}
-        keyExtractor={(item,index) => index.toString()}
-      />
+        ) : (
+          <View style={styles.textSection}>
+            <Image style={{width: 150, height: 150}} source={error}/>
+            <Text style={styles.text}>{errorMessage}</Text>
+          </View>
+        )
+      }
+      </>
     );
   }
 
@@ -123,7 +151,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#fff'
   },
-  text: {
+  textSection: {
     alignItems: 'center',
+  },
+  text: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color:'#818181'
   }
 })
