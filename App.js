@@ -133,8 +133,8 @@ const App = () => {
           !isLoading ? (
             MainScreen
           ) : (
-            <View style={styles.text}>
-              <ActivityIndicator/>
+            <View style={styles.textSection}>
+              <ActivityIndicator size="large" color="#01BCD5" />
             </View>
           )
         }
