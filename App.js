@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, FlatList, Image } from 'react-native';
+import { StyleSheet, Text, View, FlatList, ActivityIndicator, LogBox } from 'react-native';
 import { ItemList, SearchBar } from "./src/component";
 import axios from "axios";
 
 const App = () => {
 
+  // LogBox.ignoreWarnings(['Failed child context type: Invalid child context `virtualizedCell.cellKey` of type `number` supplied to `CellRenderer`, expected `string`.']);
+
   const [data, setData] = useState([]);
   const [username, setUsername] = useState('');
   const [arrayholder, setArrayholder] = useState([]);
-  const [dashboard, setDashboard] = useState(false);
-  const [empty, setEmpty] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('')
 
   useEffect(() => {
     getData();
@@ -19,6 +22,7 @@ const App = () => {
   }, []);
 
   const getData = async () => {
+    setIsLoading(true);
     await axios
       .get(`https://api.github.com/users`)
       .then(res => {
@@ -26,8 +30,12 @@ const App = () => {
         console.log(data);
         setData(data);
         setArrayholder(data);
+        setIsLoading(false);
       })
       .catch(err => {
+        setIsLoading(false);
+        setError(true);
+        setErrorMessage(err.message)
         console.log('error', err.message);
       });
   }
@@ -56,7 +64,13 @@ const App = () => {
   if (username.length < 1){
     MainScreen = (
       <View style={styles.text}>
-        <Text>Start Write Username</Text>
+        {
+          error ? (
+            <Text>{errorMessage}</Text>
+          ) : (
+            <Text>Start Write Username</Text>
+          )
+        }
       </View>
     );
   } else if (data.length < 1){
@@ -69,31 +83,16 @@ const App = () => {
     MainScreen = (
       <FlatList
         data={data}
-        renderItem={({ item }) => (
+        renderItem={({ item, i }) => (
           <ItemList
-            keyExtractor={item.id}
             image={item.avatar_url}
             userName={item.login}
           />
         )}
+        keyExtractor={(item,index) => index.toString()}
       />
     );
   }
-
-  // if (data.length > 0){
-  //   MainScreen = (
-  //     <FlatList
-  //       data={data}
-  //       renderItem={({ item }) => (
-  //         <ItemList
-  //           keyExtractor={item.id}
-  //           image={item.avatar_url}
-  //           userName={item.login}
-  //         />
-  //       )}
-  //     />
-  //   );
-  // }
 
   return (
     <>
@@ -102,7 +101,15 @@ const App = () => {
         value={username}
       />
       <View style={styles.page}>
-        {MainScreen}
+        {
+          !isLoading ? (
+            MainScreen
+          ) : (
+            <View style={styles.text}>
+              <ActivityIndicator/>
+            </View>
+          )
+        }
       </View>
     </>
   )
@@ -114,6 +121,7 @@ const styles = StyleSheet.create({
   page: {
     flex: 1,
     justifyContent: 'center',
+    backgroundColor: '#fff'
   },
   text: {
     alignItems: 'center',

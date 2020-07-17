@@ -24,7 +24,8 @@ const styles = StyleSheet.create({
   listItemContainer: {
     margin: 10,
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
+    backgroundColor: '#fff'
   },
   userName: {
     fontSize: 18
