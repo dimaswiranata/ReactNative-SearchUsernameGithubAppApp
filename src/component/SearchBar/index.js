@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View, TextInput } from 'react-native';
 import Icon from 'react-native-vector-icons/Fontisto';
 
-const index = ({onChangeText}) => {
+const index = ({onChangeText, value}) => {
   return (
     <View style={styles.comp}>
       <View style={styles.seacrhBarContainer}>
@@ -16,6 +16,7 @@ const index = ({onChangeText}) => {
           placeholder="Search Github Users"
           style={styles.input}
           onChangeText={onChangeText}
+          value={value}
         />
       </View>
     </View>
